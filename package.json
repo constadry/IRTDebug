@@ -10,24 +10,14 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:jsblockhelper.addtrycatch",
-    "onCommand:jsblockhelper.addifelse"
+    "onCommand:jsblockhelper.funcExecutor",
   ],
   "main": "./extension.js",
   "contributes": {
-    "commands": [{
-      "command": "jsblockhelper.addtrycatch",
-      "title": "Insert try catch"
-    },
-    {
-      "command": "jsblockhelper.addifelse",
-      "title": "Insert if else"
-    }
-  ],
-    "keybindings":[
+    "commands": [
       {
-        "command": "jsblockhelper.addtrycatch",
-        "key": "ctrl+k+e"
+        "command": "jsblockhelper.funcExecutor",
+        "title": "Execute function by name"
       }
     ]
   },
@@ -37,14 +27,17 @@
     "test": "node ./test/runTest.js"
   },
   "devDependencies": {
-    "@types/vscode": "^1.73.0",
     "@types/glob": "^8.0.0",
     "@types/mocha": "^10.0.0",
     "@types/node": "16.x",
+    "@types/vscode": "^1.73.0",
+    "@vscode/test-electron": "^2.2.0",
     "eslint": "^8.26.0",
     "glob": "^8.0.3",
     "mocha": "^10.1.0",
-    "typescript": "^4.8.4",
-    "@vscode/test-electron": "^2.2.0"
+    "typescript": "^4.8.4"
+  },
+  "dependencies": {
+    "esprima": "^4.0.1"
   }
 }

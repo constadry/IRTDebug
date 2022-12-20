@@ -9,42 +9,47 @@ const vscode = require('vscode');
  * @param {vscode.ExtensionContext} context
  */
 function activate(context) {
-
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "snake" is now active!');
-
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with  registerCommand
-	// The commandId parameter must match the command field in package.json
-	let addtrycatch = myCommand("addtrycatch", "try {\n", "\n} catch (error) {\n\n}");
-	let addifelse = myCommand("addifelse", "if () {\n", "\n} else {\n\n}");
-
-	context.subscriptions.push(addtrycatch);
-	context.subscriptions.push(addifelse);
+	let funcExecutor = myCommand();
+	context.subscriptions.push(funcExecutor);
 }
 
-/**
- * @param {string} name
- * @param {string} start
- * @param {string} end
- */
-function myCommand(name, start, end) {
-	return vscode.commands.registerCommand("jsblockhelper.".concat('', name), function () {
+
+function myCommand() {
+	return vscode.commands.registerCommand("jsblockhelper.funcExecutor", function () {
 		// The code you place here will be executed every time your command is executed
 
 		const editor = vscode.window.activeTextEditor;
 
 		if (editor) {
 			const document = editor.document;
-
 			const selection = editor.selection;
-			const word = document.getText(selection).replaceAll('\n', '\n\t').replace(/^/, '\t');
-
+			const word = document.getText(selection);
+			let allText = document.getText();
+			var esprima = require('esprima');
+			var program = allText;
+			var entries = [];
+			let parsed = esprima.parseScript(program, {}, function (node, meta) {
+						entries.push({
+							start: meta.start.offset,
+							end: meta.end.offset,
+							node: node
+						});
+				})
+			
+			//find function definations
+			var functionDeclarations = entries.filter(e => e.node.type == 'FunctionDeclaration')
+			console.log('function definations: ' + JSON.stringify(functionDeclarations.map (a => {return {name: a.node.id.name, start: a.start, end: a.end}})))
+			
+			//find word() function defination
+			var wordFunctionDeclaration = entries.filter(e => e.node.type == 'FunctionDeclaration' && e.node.id.name == word)
+			console.log('foo function definations: ' + JSON.stringify(functionDeclarations.map (a => {return {start: a.start, end: a.end}})))
+			var fnOffsets = wordFunctionDeclaration.map(a => {return {start: a.start, end: a.end}});
+			// var prFormatted = program.replaceAll('\r\n', '');
+			var fnStr = program.substring(fnOffsets[0].start, fnOffsets[0].end);
+			var fn = eval('(' + fnStr + ')');
+			let num = fn();
 			editor.edit(editBuilder => {
-				editBuilder.insert(selection.start, start);
-				editBuilder.replace(selection, word);
-				editBuilder.insert(selection.end, end);
+				editBuilder.replace(selection, word + '\r\n' + num);
 			});
 		}
 	});
